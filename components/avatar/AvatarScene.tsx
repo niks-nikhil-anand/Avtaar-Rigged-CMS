@@ -44,10 +44,11 @@ function CameraRig({ revision, closeUp, report }: { revision: number; closeUp: b
   }, [camera, size.width, size.height, revision, closeUp, report, invalidate]);
   return <OrbitControls ref={controls} makeDefault enablePan={false} minDistance={0.85} maxDistance={12} minPolarAngle={0.45} maxPolarAngle={Math.PI / 2 + 0.1} />;
 }
-export default function AvatarScene({ avatarOnly = false, onModelReady }: { avatarOnly?: boolean; onModelReady?: (model: AvatarReady | null) => void }) {
+export default function AvatarScene({ avatarOnly = false, closeUp: closeUpProp, onModelReady }: { avatarOnly?: boolean; closeUp?: boolean; onModelReady?: (model: AvatarReady | null) => void }) {
   const [model, setModel] = useState<AvatarReady | null>(null);
   const [debug, setDebug] = useState(true);
-  const [closeUp, setCloseUp] = useState(false);
+  const [closeUpState, setCloseUp] = useState(false);
+  const closeUp = closeUpProp ?? closeUpState;
   const [revision, setRevision] = useState(0);
   const [demo, setDemo] = useState(false);
   const demoRef = useRef<BlendDemoControls>(null);
