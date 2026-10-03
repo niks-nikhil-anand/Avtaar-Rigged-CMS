@@ -1,4 +1,20 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Local Avatar Engine
+
+Next.js application for a local rigged avatar with Gemini Live voice integration.
+
+Phase 01 is implemented: a responsive GLB viewer with lighting, ground shadows, camera controls, morph presets, individual sliders, bone controls, and runtime model inventory. See [manual verification](docs/phase-01-verification.md), [architecture and implementation phases](docs/architecture.md), and [model inspection findings](docs/model-inspection.md).
+
+Phase 02 adds the central animation engine, smooth facial blending, per-channel priorities, pause/resume, reset/cleanup, and a synthetic blend demo. See [engine API and manual verification](docs/phase-02-engine.md).
+
+Phase 03 adds a relaxed pose, natural blinking/gaze, procedural idle motion, six emotions, behavior transitions, reduced motion, and an amplitude/viseme mouth interface. See [behavior API and manual verification](docs/phase-03-behavior.md).
+
+Phases 04–05 add AudioWorklet microphone capture, PCM resampling and queued playback, playback-driven mouth movement, server-issued ephemeral tokens, and Gemini Live audio/text conversations on `/avtaar-connected`. Set `GEMINI_API_KEY` in `.env.local` and restart the server. See [audio and Gemini verification](docs/phase-04-05-audio-live.md).
+
+Phase 06 extracts `useAvatarConversation`, centralizes conversation behavior, adds silence gating and immediate speech resets, and exposes emotion commands with a neutral fallback. See [lip-sync integration and manual checks](docs/phase-06-conversation.md). Automatic phoneme timing remains optional until an audio-analysis system is validated.
+
+Run `npm run test:live` with the app running on localhost:3001 for an optional real Gemini PCM-input smoke test. It sends Google's public audio sample and consumes API quota; ordinary `npm test` uses mocks and makes no Gemini calls.
+
+Run `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` for project verification.
 
 ## Getting Started
 
