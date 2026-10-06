@@ -13,6 +13,8 @@ export class ConversationCoordinator {
   private silent = true;
   emotion: Emotion = "neutral";
   intensity = 0.7;
+  /** The expression to return to when the session ends; defaults to neutral, or the saved avatar look. */
+  private baseline: { emotion: Emotion; intensity: number } = { emotion: "neutral", intensity: 0.7 };
   get state(): BehaviorState {
     if (this.userSpeaking && this.connection === "connected") return "listening";
     if (this.frame.playing) return "speaking";
@@ -29,7 +31,7 @@ export class ConversationCoordinator {
   setConnection(connection: ConnectionState): void {
     this.connection = connection;
     if (connection !== "connected") { this.waiting = false; this.userSpeaking = false; this.interrupt(); }
-    if (connection === "disconnected" || connection === "error") this.setEmotion("neutral");
+    if (connection === "disconnected" || connection === "error") this.setEmotion(this.baseline.emotion, this.baseline.intensity);
     this.sync();
   }
   beginTurn(): void { if (this.connection === "connected") this.waiting = true; this.sync(); }
@@ -54,6 +56,11 @@ export class ConversationCoordinator {
     this.intensity = Number.isFinite(intensity) ? clamp01(intensity) : 0.7;
     this.engine?.behavior.setEmotion(this.emotion, this.intensity);
     return this.emotion;
+  }
+  setBaseline(command: string, intensity = this.baseline.intensity): Emotion {
+    const emotion = this.setEmotion(command, intensity);
+    this.baseline = { emotion, intensity: this.intensity };
+    return emotion;
   }
   private sync(force = false): void {
     const engine = this.engine;

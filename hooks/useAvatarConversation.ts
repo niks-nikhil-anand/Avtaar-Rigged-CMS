@@ -178,5 +178,7 @@ export function useAvatarConversation() {
   const stopAudio = () => { const value = resources.current; if (value) { value.operation++; if (micPending) value.mic.stop(); } setMicPending(false); stopSample(); value?.live.stopResponse(); coordinator.interrupt(); syncAvatar(); };
   const setSpeakerMuted = (next: boolean) => { setMuted(next); resources.current?.player.setMuted(next); };
   const setEmotion = (name: string, intensity = 0.7) => { setEmotionState(coordinator.setEmotion(name, intensity)); };
-  return { ready, connection, behaviorState, emotion, micOn, micPending, muted, error, text, setText, transcripts, playback, recording, hasRecording, devices, device, setDevice, busy, connected, onModelReady, connect, disconnect, toggleMicrophone, sendText, stopAudio, setSpeakerMuted, setEmotion, testSpeaker, recordTest, playRecording };
+  /** Sets the expression the avatar returns to between and after sessions (the saved look). */
+  const setBaselineEmotion = useCallback((name: string, intensity = 0.7) => { setEmotionState(coordinator.setBaseline(name, intensity)); }, [coordinator]);
+  return { ready, connection, behaviorState, emotion, micOn, micPending, muted, error, text, setText, transcripts, playback, recording, hasRecording, devices, device, setDevice, busy, connected, onModelReady, connect, disconnect, toggleMicrophone, sendText, stopAudio, setSpeakerMuted, setEmotion, setBaselineEmotion, testSpeaker, recordTest, playRecording };
 }
