@@ -12,6 +12,8 @@ Phases 04–05 add AudioWorklet microphone capture, PCM resampling and queued pl
 
 Phase 06 extracts `useAvatarConversation`, centralizes conversation behavior, adds silence gating and immediate speech resets, and exposes emotion commands with a neutral fallback. See [lip-sync integration and manual checks](docs/phase-06-conversation.md). Automatic phoneme timing remains optional until an audio-analysis system is validated.
 
+Phase 07 adds ten selectable body poses with a custom pose editor, 9 scene backgrounds, and rig-specific expression mapping. See [poses and rig mapping](docs/phase-07-poses.md).
+
 Run `npm run test:live` with the app running on localhost:3001 for an optional real Gemini PCM-input smoke test. It sends Google's public audio sample and consumes API quota; ordinary `npm test` uses mocks and makes no Gemini calls.
 
 Run `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` for project verification.
