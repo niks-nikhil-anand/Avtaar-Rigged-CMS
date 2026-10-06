@@ -144,6 +144,8 @@ Design rules: React components render UI and forward commands; engines depend on
 - [Phases 04–05: audio and Gemini Live](docs/phase-04-05-audio-live.md)
 - [Phase 06: conversation and lip-sync](docs/phase-06-conversation.md)
 - [Phase 07: poses, themes, saved looks and the Connected page](docs/phase-07-poses.md)
+- [Precise real-time lip-sync guide: HeyGen/Synthesia-level roadmap](docs/lip-sync-guide.md)
+- [Enhancement roadmap: step-by-step plan to competitor-level quality](docs/enhancement-roadmap.md)
 
 ## Privacy and security
 
