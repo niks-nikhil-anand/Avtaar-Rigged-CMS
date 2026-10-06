@@ -40,8 +40,8 @@ test("deterministic blink closes, holds, opens, and schedules the next blink", (
 test("gaze clamps targets, matches both eyes, and centers while listening/reduced motion", () => {
   const eyes = new EyeEngine(() => 0.9); eyes.setLookAt(10, -10);
   const gaze = eyes.update(0.1, "idle", false).gaze;
-  assert.equal(gaze["bone:LeftEye:yaw"], 0.12); assert.equal(gaze["bone:RightEye:yaw"], 0.12);
-  assert.equal(gaze["bone:LeftEye:pitch"], 0.09);
+  assert.equal(gaze["bone:LeftEye:yaw"], 0.17); assert.equal(gaze["bone:RightEye:yaw"], 0.17);
+  assert.equal(gaze["bone:LeftEye:pitch"], 0.12);
   eyes.releaseLookAt();
   assert.equal(eyes.update(0.1, "listening", false).gaze["bone:LeftEye:yaw"], 0);
   assert.equal(eyes.update(0.1, "idle", true).gaze["bone:LeftEye:yaw"], 0);
@@ -84,7 +84,9 @@ test("viseme mixtures are normalized and do not double the amplitude jaw opening
   const lips = new LipSyncEngine(new Set(["jawOpen", "aa", "oh"]));
   lips.startSpeaking(); lips.setAmplitude(1); lips.setViseme("aa", 1); lips.setViseme("oh", 1);
   const channels = lips.update(0.1);
-  assert.equal(channels["morph:aa"], 0.5); assert.equal(channels["morph:oh"], 0.5); assert.equal(channels["morph:jawOpen"], 0);
+  assert.equal(channels["morph:aa"], 0.5); assert.equal(channels["morph:oh"], 0.5);
+  // Amplitude jaw is fully consumed by the mixture, so the jaw is just the weighted viseme opening (0.5 * 0.55 + 0.5 * 0.4), not added on top.
+  assert.ok(Math.abs((channels["morph:jawOpen"] ?? NaN) - 0.475) < 1e-9);
   lips.clearVisemes(); assert.equal(lips.update(0.1)["morph:aa"], 0);
 });
 

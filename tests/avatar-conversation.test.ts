@@ -82,3 +82,15 @@ test("amplitude smoothing is bounded and stable across frame rates, and silence 
   };
   assert.ok(Math.abs(simulate(30) - simulate(120)) < 1e-7);
 });
+
+test("a saved baseline expression survives disconnects and errors", () => {
+  const f = fixture();
+  f.coordinator.setBaseline("happy", 0.9);
+  f.coordinator.setConnection("connected");
+  f.coordinator.setEmotion("surprised", 0.5);
+  f.coordinator.setConnection("error");
+  assert.equal(f.coordinator.emotion, "happy"); assert.equal(f.coordinator.intensity, 0.9);
+  f.coordinator.setConnection("connected"); f.coordinator.setConnection("disconnected");
+  assert.equal(f.coordinator.emotion, "happy");
+  assert.equal(new ConversationCoordinator().emotion, "neutral");
+});
