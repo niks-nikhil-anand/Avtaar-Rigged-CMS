@@ -1,54 +1,172 @@
-# Local Avatar Engine
+<div align="center">
 
-Next.js application for a local rigged avatar with Gemini Live voice integration.
+<img src="public/logo.png" alt="Avatar Studio logo: a translucent circuit-board robot head in profile" width="160" />
 
-Phase 01 is implemented: a responsive GLB viewer with lighting, ground shadows, camera controls, morph presets, individual sliders, bone controls, and runtime model inventory. See [manual verification](docs/phase-01-verification.md), [architecture and implementation phases](docs/architecture.md), and [model inspection findings](docs/model-inspection.md).
+# Avatar Studio — Rigged 3D AI Avatar with Gemini Live Voice Chat
 
-Phase 02 adds the central animation engine, smooth facial blending, per-channel priorities, pause/resume, reset/cleanup, and a synthetic blend demo. See [engine API and manual verification](docs/phase-02-engine.md).
+**A local-first Next.js app that renders a rigged GLB avatar in the browser with React Three Fiber, animates it with a framework-independent engine (blinking, gaze, emotions, lip-sync, ten body poses), and lets you talk to it in real time through the Google Gemini Live API.**
 
-Phase 03 adds a relaxed pose, natural blinking/gaze, procedural idle motion, six emotions, behavior transitions, reduced motion, and an amplitude/viseme mouth interface. See [behavior API and manual verification](docs/phase-03-behavior.md).
+[Features](#features) · [Quick start](#quick-start) · [Usage](#usage) · [Configuration](#configuration) · [Architecture](#architecture) · [FAQ](#faq)
 
-Phases 04–05 add AudioWorklet microphone capture, PCM resampling and queued playback, playback-driven mouth movement, server-issued ephemeral tokens, and Gemini Live audio/text conversations on `/avtaar-connected`. Set `GEMINI_API_KEY` in `.env.local` and restart the server. See [audio and Gemini verification](docs/phase-04-05-audio-live.md).
+</div>
 
-Phase 06 extracts `useAvatarConversation`, centralizes conversation behavior, adds silence gating and immediate speech resets, and exposes emotion commands with a neutral fallback. See [lip-sync integration and manual checks](docs/phase-06-conversation.md). Automatic phoneme timing remains optional until an audio-analysis system is validated.
+---
 
-Phase 07 adds ten selectable body poses with a custom pose editor, 9 scene backgrounds, and rig-specific expression mapping. See [poses and rig mapping](docs/phase-07-poses.md).
+## Why Avatar Studio?
 
-Run `npm run test:live` with the app running on localhost:3001 for an optional real Gemini PCM-input smoke test. It sends Google's public audio sample and consumes API quota; ordinary `npm test` uses mocks and makes no Gemini calls.
+Most "talking avatar" demos are either a video loop or a closed SaaS. Avatar Studio is a complete, hackable reference for building an **interactive 3D AI avatar** that runs on your own machine:
 
-Run `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` for project verification.
+- a **real-time 3D viewer** for rigged `.glb` characters (morph targets and skeleton),
+- a **procedural animation engine** that keeps the avatar alive (blinking, gaze, idle sway) and expressive (emotions, visemes, body poses),
+- a **voice conversation loop** with Gemini Live: microphone in, streamed audio out, mouth movement driven by what is actually audible,
+- a **save-and-share workflow**: design the look in the Studio, save it once, and the conversation page renders the exact same avatar.
 
-## Getting Started
+Good fit for: AI assistant and virtual-host prototypes, VTuber-style tools, support-agent avatars, game NPC dialogue experiments, rig and blendshape inspection, and learning real-time WebGL plus audio.
 
-First, run the development server:
+## Features
+
+### 3D avatar viewer
+- Loads a rigged GLB (Character Creator or ARKit-style morph targets) with orbit, zoom, full-body and face-view cameras.
+- Nine **scene lighting presets** (Day, Evening, Dawn, Night, Moon, Full moon, Studio dark, Neon, Forest) plus **fully custom lighting**: sky and floor colors, stars, a moon or sun disc, key and rim lights (color, intensity, direction, height), ambient and sky bounce.
+- Model inspector: meshes, bones, morph-target sliders, bone rotation sliders and a scene inventory.
+
+### Animation engine (framework-independent TypeScript)
+- Priority-based layer mixer with smooth, frame-rate-independent blending.
+- Natural **blinking, gaze and idle motion**, **six emotions** (neutral, happy, sad, angry, surprised, thinking) with adjustable intensity, and a reduced-motion mode.
+- **Lip-sync**: amplitude-driven jaw plus 15 viseme shapes, gated by real playback so the mouth never moves before you hear audio.
+- **Ten body poses**: T-pose, A-pose, arms up, one arm up and one down, elbows bent, hands behind head, deep squat, one-leg balance, torso twist with head turn, and an animated wave. A **custom pose editor** adds per-bone sliders, left/right mirroring, named saves and copy-as-JSON.
+
+### Gemini Live voice conversation
+- Microphone capture with an `AudioWorklet`, PCM resampling and queued low-latency playback.
+- **Ephemeral tokens** are minted on the server, so your Gemini API key never reaches the browser.
+- Session resume and reconnect handling, interruption (barge-in) support and a live transcript.
+- A dedicated conversation page with connection status, microphone and speaker controls, and a message box.
+
+### Save once, render everywhere
+- **Save look** stores pose, expression, gaze, behavior switches, lighting and camera.
+- `/avtaar-connected` opens with that saved look automatically, and the saved expression becomes the avatar's baseline between conversations.
+
+### Interface
+- A modern studio UI with **dark and light mode** (follows your system, applied before first paint), a tabbed sidebar with its own scrollbar (Poses, Face, Behavior, Lighting, Inspect), and a responsive layout.
+
+## Tech stack
+
+| Area | Technology |
+| --- | --- |
+| Framework | [Next.js](https://nextjs.org/) 16 (App Router), React 19, TypeScript |
+| 3D rendering | [three.js](https://threejs.org/), [@react-three/fiber](https://r3f.docs.pmnd.rs/), [@react-three/drei](https://github.com/pmndrs/drei) |
+| Voice AI | [Google Gemini Live API](https://ai.google.dev/) via [`@google/genai`](https://www.npmjs.com/package/@google/genai) |
+| Audio | Web Audio API, AudioWorklet, 16-bit PCM |
+| Styling | CSS design tokens, Tailwind CSS 4 |
+| Testing | Node test runner with `tsx` (Gemini and audio are mocked; no API calls) |
+
+## Quick start
+
+**Requirements:** Node.js 20 or newer, a browser with WebGL 2, and, for voice chat, a [Gemini API key](https://aistudio.google.com/apikey).
 
 ```bash
+git clone https://github.com/niks-nikhil-anand/Avtaar-Rigged-CMS.git
+cd Avtaar-Rigged-CMS
+npm install
+cp .env.example .env.local   # then add your GEMINI_API_KEY
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) for the Studio and [http://localhost:3000/avtaar-connected](http://localhost:3000/avtaar-connected) for the conversation page. The Studio works without an API key; only voice chat needs one.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create `.env.local` (never commit it):
 
-## Learn More
+| Variable | Required | Description |
+| --- | --- | --- |
+| `GEMINI_API_KEY` | For voice chat | Server-only credential used to mint short-lived Live tokens. Never prefix it with `NEXT_PUBLIC_`. |
+| `GEMINI_LIVE_MODEL` | No | Live model id. Defaults to `gemini-3.8-live`. |
 
-To learn more about Next.js, take a look at the following resources:
+The token endpoint (`POST /api/gemini/token`) answers only requests from `localhost`, is rate limited, and returns single-use tokens.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Usage
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Design the look in the Studio** (`/`). Choose a pose, expression, gaze and lighting using the Poses, Face, Behavior and Lighting tabs.
+2. Click **Save look**. Your choices are stored in the browser (`localStorage`).
+3. Open **Connect avatar** (`/avtaar-connected`). The avatar appears exactly as saved. Click **Connect to Gemini**, start the microphone and talk.
 
-## Deploy on Vercel
+Tips: use *Face view* for close-ups, the background dots on the canvas to switch scenes instantly, and *Copy JSON* in the custom pose editor to keep poses in version control.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Bring your own avatar
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Any rigged GLB works if it has facial morph targets and a skeleton.
+
+1. Put the file in `public/`. Keep large originals out of the web bundle: a compressed copy loads much faster.
+2. Point `url` in [`avatar/model/modelProfile.ts`](avatar/model/modelProfile.ts) at it.
+3. Map your rig's names to the engine's in the same file: `morphAliases` (expressions and visemes), `boneAliases` (head, eyes, spine, limbs) and `boneAxes` (for bones whose local axes differ).
+4. Adjust pose angles in [`avatar/pose/poses.ts`](avatar/pose/poses.ts) if your skeleton's axes differ.
+
+The bundled model is `public/avtaar-rigged-blender/Untitled.slim.glb`, a compressed (meshopt geometry, WebP textures) copy of a Character Creator export.
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` and `npm start` | Production build and server |
+| `npm test` | Unit tests (mocked; no network or API quota) |
+| `npm run typecheck` | TypeScript check |
+| `npm run lint` | ESLint |
+| `npm run test:live` | Optional real Gemini smoke test; needs the app on `localhost:3001` and consumes API quota |
+
+## Architecture
+
+```
+app/                      Routes: / (Studio), /avtaar-connected, /api/gemini/token
+components/avatar/        Viewer, scene, sidebar panels (poses, face, behavior, lighting), Gemini panel
+avatar/engine/            Animation engine: mixer, facial, eyes, idle, emotion, lip-sync
+avatar/pose/              Pose presets and the pose controller
+avatar/state/             Save and restore of the whole avatar look
+avatar/model/             Model inspection and rig name mapping
+avatar/conversation/      Playback-driven conversation coordinator
+services/audio/           Microphone capture, PCM utilities, queued player
+services/gemini/          Live client, config, token policy
+hooks/                    useAvatarConversation
+docs/                     Phase-by-phase guides and verification checklists
+tests/                    Engine, pose, state, conversation, audio and Gemini tests
+```
+
+Design rules: React components render UI and forward commands; engines depend only on model bindings and delta time; audio playback is the timing source for lip-sync; the conversation hook owns service lifecycles; server credentials never enter browser code.
+
+### Documentation
+
+- [Architecture and implementation phases](docs/architecture.md)
+- [Model inspection findings](docs/model-inspection.md)
+- [Phase 01: viewer verification](docs/phase-01-verification.md)
+- [Phase 02: animation engine API](docs/phase-02-engine.md)
+- [Phase 03: natural behavior and emotions](docs/phase-03-behavior.md)
+- [Phases 04–05: audio and Gemini Live](docs/phase-04-05-audio-live.md)
+- [Phase 06: conversation and lip-sync](docs/phase-06-conversation.md)
+- [Phase 07: poses, themes, saved looks and the Connected page](docs/phase-07-poses.md)
+
+## Privacy and security
+
+- Your API key stays on the server in `.env.local`; the browser only receives short-lived, single-use tokens.
+- Microphone audio is sent to Google Gemini only while connected and the microphone is on.
+- Saved looks and custom poses live in your browser's `localStorage`; nothing is uploaded.
+
+## FAQ
+
+**Does it need an API key?** Only for voice conversation. The viewer, poses, expressions, lighting and saving all work without one.
+
+**Which browsers work?** Development and testing used a Chromium-based browser. Other current browsers with WebGL 2 should work but are untested. Microphone capture needs `https` or `localhost`.
+
+**Can I use a different avatar or voice?** Yes. See [Bring your own avatar](#bring-your-own-avatar), set `GEMINI_LIVE_MODEL` for the model, and change the voice in `services/gemini/config.ts`.
+
+**Why is the first load slow in development?** The dev server compiles on demand and the GLB is parsed in the browser. A production build (`npm run build && npm start`) starts faster.
+
+**Can I deploy it publicly?** The token endpoint is deliberately limited to `localhost`. Add your own authentication and rate limiting before exposing it.
+
+## Contributing
+
+Issues and pull requests are welcome. Please run `npm test`, `npm run typecheck`, `npm run lint` and `npm run build` before opening a PR.
+
+---
+
+<sub>Keywords: 3D AI avatar, talking avatar, Gemini Live API, Google Gemini voice chat, Next.js, React Three Fiber, three.js, GLB viewer, rigged character, morph targets, blendshapes, lip sync, visemes, procedural animation, real-time voice assistant, virtual human, digital human, WebGL.</sub>
