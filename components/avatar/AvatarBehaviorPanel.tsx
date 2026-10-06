@@ -12,7 +12,7 @@ export default function AvatarBehaviorPanel({ engine, onReturnToIdle, onActivate
   const [amplitude, setAmplitude] = useState(0);
   const [viseme, setViseme] = useState<Viseme | "">("");
   const [reduced, setReduced] = useState(behavior.reducedMotion);
-  const [gaze, setGaze] = useState({ x: 0, y: 0 });
+  const [gaze, setGaze] = useState(() => behavior.getLookAt() ?? { x: 0, y: 0 });
   const activate = () => {
     onActivate(); engine.start(); behavior.enable(); setEnabled(true);
     engine.resetExpression("debug:morph");
@@ -30,7 +30,8 @@ export default function AvatarBehaviorPanel({ engine, onReturnToIdle, onActivate
     behavior.lips.clearVisemes(); setViseme(next);
     if (next) behavior.lips.setViseme(next, 0.85);
   };
-  return <details open className="behavior-panel"><summary>Behavior action buttons</summary>
+  return <div className="behavior-panel">
+    <section className="tab-section" data-tab="behavior">
     <div className="preset-row behavior-actions"><button aria-pressed={enabled} onClick={() => {
       if (enabled) { behavior.disable(); setAmplitude(0); setViseme(""); } else { behavior.enable(); engine.start(); onActivate(); }
       setEnabled(!enabled);
@@ -40,6 +41,9 @@ export default function AvatarBehaviorPanel({ engine, onReturnToIdle, onActivate
     <div className="preset-row">{behaviorStates.map((name) => <button key={name} aria-pressed={state === name && enabled} onClick={() => {
       chooseState(name);
     }}>{name[0].toUpperCase() + name.slice(1)}</button>)}</div>
+    <label className="motion-control"><input type="checkbox" checked={reduced} onChange={(event) => { setReduced(event.target.checked); behavior.setReducedMotion(event.target.checked); }} /> Reduced motion</label>
+    </section>
+    <section className="tab-section" data-tab="face">
     <p className="action-label">Expressions</p>
     <div className="preset-row">{emotions.map((name) => <button key={name} aria-pressed={emotion === name && enabled} onClick={() => {
       activate(); setEmotion(name); behavior.setEmotion(name, intensity);
@@ -55,8 +59,7 @@ export default function AvatarBehaviorPanel({ engine, onReturnToIdle, onActivate
       const next = Number(event.target.value); setAmplitude(next); behavior.lips.setAmplitude(next);
     }} /></label>
     <p className="action-label">Speech shapes (visemes)</p>
-    <div className="preset-row viseme-actions">{visemes.map((name) => <button key={name} aria-label={`Viseme ${name}`} aria-pressed={enabled && viseme === name} onClick={() => chooseViseme(name)}>{name}</button>)}<button onClick={() => chooseViseme("")}>Clear speech shape</button></div>
-    <label className="motion-control"><input type="checkbox" checked={reduced} onChange={(event) => { setReduced(event.target.checked); behavior.setReducedMotion(event.target.checked); }} /> Reduced motion</label>
+    <div className="preset-row viseme-actions">{visemes.map((name) => <button key={name} aria-label={`Viseme ${name}`} aria-pressed={enabled && viseme === name} disabled={!engine.hasMorph(name)} title={engine.hasMorph(name) ? undefined : "This model has no matching mouth shape"} onClick={() => chooseViseme(name)}>{name}</button>)}<button onClick={() => chooseViseme("")}>Clear speech shape</button></div>
     <p className="action-label">Eye direction</p>
     <div className="preset-row">{[{ label: "Look left", x: -1, y: 0 }, { label: "Look right", x: 1, y: 0 }, { label: "Look up", x: 0, y: 1 }, { label: "Look down", x: 0, y: -1 }, { label: "Look center", x: 0, y: 0 }].map(({ label, x, y }) => <button key={label} onClick={() => {
       activate(); setGaze({ x, y }); behavior.setLookAt(x, y);
@@ -64,5 +67,6 @@ export default function AvatarBehaviorPanel({ engine, onReturnToIdle, onActivate
     <details><summary>Fine gaze adjustment</summary>{(["x", "y"] as const).map((axis) => <label className="slider-control" key={axis}><span>Gaze {axis}<output>{gaze[axis].toFixed(2)}</output></span><input aria-label={`Gaze ${axis}`} type="range" min="-1" max="1" step="0.01" value={gaze[axis]} onChange={(event) => {
       const next = { ...gaze, [axis]: Number(event.target.value) }; setGaze(next); behavior.setLookAt(next.x, next.y);
     }} /></label>)}</details>
-  </details>;
+    </section>
+  </div>;
 }

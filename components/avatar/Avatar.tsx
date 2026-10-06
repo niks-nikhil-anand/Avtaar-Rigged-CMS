@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
-import { Box3, Mesh, Vector3 } from "three";
+import { Box3, Mesh, Vector3, type Group } from "three";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import { inspectModel } from "@/avatar/model/inspectModel";
 import { resolveBindings } from "@/avatar/model/resolveBindings";
@@ -16,6 +16,7 @@ export interface AvatarReady { bindings: ModelBindings; report: ModelReport; eng
 export default function Avatar({ onReady }: { onReady: (model: AvatarReady | null) => void }) {
   const gltf = useGLTF(modelProfile.url);
   const engineRef = useRef<AvatarEngine | null>(null);
+  const groupRef = useRef<Group>(null);
   const model = useMemo(() => {
     const root = clone(gltf.scene);
     root.updateMatrixWorld(true);
@@ -26,6 +27,8 @@ export default function Avatar({ onReady }: { onReady: (model: AvatarReady | nul
     const scale = modelProfile.displayHeight / size.y;
     root.traverse((node) => {
       if (node instanceof Mesh) {
+        // Culling bounds stay at the bind pose, so a lowered or posed body would be culled while still on screen.
+        node.frustumCulled = false;
         node.castShadow = true;
         node.receiveShadow = true;
         // This export has no alpha on the eye-occlusion and tear-line shells, so they render as opaque white over the eyes.
@@ -49,7 +52,14 @@ export default function Avatar({ onReady }: { onReady: (model: AvatarReady | nul
     onReady({ bindings: model.bindings, report: model.report, engine });
     return () => { motionPreference.removeEventListener("change", syncMotion); engine.dispose(); engineRef.current = null; onReady(null); };
   }, [model, onReady]);
-  useFrame((_, delta) => engineRef.current?.update(delta));
+  useFrame((_, delta) => {
+    const engine = engineRef.current;
+    engine?.update(delta);
+    // The pose shifts the body (squat, weight shift) so feet stay planted; root units are model metres.
+    if (engine && groupRef.current) {
+      groupRef.current.position.set(model.offset[0] + engine.pose.rootOffset.x * model.scale, model.offset[1] + engine.pose.rootOffset.y * model.scale, model.offset[2]);
+    }
+  });
   // Geometry/materials are shared with the loader cache; preserve them on clone teardown.
-  return <group position={model.offset} scale={model.scale}><primitive object={model.root} dispose={null} /></group>;
+  return <group ref={groupRef} position={model.offset} scale={model.scale}><primitive object={model.root} dispose={null} /></group>;
 }
