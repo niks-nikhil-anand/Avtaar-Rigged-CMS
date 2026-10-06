@@ -1,6 +1,6 @@
 import { Bone, Mesh, Quaternion, Euler, MathUtils, type Object3D } from "three";
 import type { ModelBindings, MorphBinding, BoneBinding } from "../types";
-import { modelProfile } from "./modelProfile";
+import { modelProfile, morphAliases, boneAliases } from "./modelProfile";
 import { boneLimit } from "../engine/behaviorConfig";
 
 export function resolveBindings(root: Object3D): ModelBindings {
@@ -16,6 +16,17 @@ export function resolveBindings(root: Object3D): ModelBindings {
     }
     if (node instanceof Bone) bones.set(node.name, { bone: node, quaternion: node.quaternion.clone(), position: node.position.clone(), scale: node.scale.clone() });
   });
+  for (const [canonical, targets] of Object.entries(morphAliases)) {
+    if (morphs.has(canonical)) continue;
+    const entries = targets.flatMap((target) => morphs.get(target) ?? []);
+    if (entries.length) morphs.set(canonical, entries);
+  }
+  // Drop the raw names so each morph/bone has a single owner; two keys on one target would fight every frame.
+  for (const [canonical, targets] of Object.entries(morphAliases)) if (morphs.has(canonical)) for (const target of targets) morphs.delete(target);
+  for (const [canonical, target] of Object.entries(boneAliases)) {
+    const entry = bones.get(target);
+    if (entry && !bones.has(canonical)) { bones.set(canonical, entry); bones.delete(target); }
+  }
   return {
     morphs, bones,
     unsupported: [...modelProfile.controls.filter((name) => !morphs.has(name)), ...modelProfile.bones.filter((name) => !bones.has(name))],
