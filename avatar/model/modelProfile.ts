@@ -18,18 +18,27 @@ export const morphAliases: Record<string, string[]> = {
   E: ["V_Wide"], CH: ["V_Affricate"], SS: ["V_Tight"], sil: ["V_None"],
 };
 
-/** Engine bone name -> this model's bone name. Arms are deliberately omitted: this rig is already in a relaxed pose. */
-export const boneAliases: Record<string, string> = {
-  Head: "CC_Base_Head", Neck: "CC_Base_NeckTwist01",
-  LeftEye: "CC_Base_L_Eye", RightEye: "CC_Base_R_Eye",
-  Spine1: "CC_Base_Spine01", Spine2: "CC_Base_Spine02",
-};
+export type BoneAxis = "x" | "y" | "z" | "-x" | "-y" | "-z";
 
 export const modelProfile = {
   url: "/avtaar-rigged-blender/Untitled.glb",
   displayHeight: 2.8,
   controls: ["eyeBlinkLeft", "eyeBlinkRight", "jawOpen", "mouthSmileLeft", "mouthSmileRight", "mouthFrownLeft", "mouthFrownRight"],
   bones: ["Head", "Neck", "LeftEye", "RightEye"],
+  /** Canonical engine bone name → bone name in the asset. The asset may hold several skeleton copies per name. Arms are left unmapped: both assets already rest in a relaxed pose. */
+  boneAliases: {
+    Head: "CC_Base_Head",
+    Neck: "CC_Base_NeckTwist01",
+    LeftEye: "CC_Base_L_Eye",
+    RightEye: "CC_Base_R_Eye",
+    Spine1: "CC_Base_Spine01",
+    Spine2: "CC_Base_Spine02",
+  } as Record<string, string>,
+  /** Asset bone name → local axis (optionally negated) carrying each canonical pitch/yaw/roll, for bones not oriented X-right, Y-up, Z-forward. */
+  boneAxes: {
+    head: { pitch: "-z", yaw: "x", roll: "-y" },
+    neck_02: { pitch: "-z", yaw: "x", roll: "-y" },
+  } as Record<string, Record<"pitch" | "yaw" | "roll", BoneAxis>>,
   presets: {
     Blink: { eyeBlinkLeft: 1, eyeBlinkRight: 1 },
     Smile: { mouthSmileLeft: 0.8, mouthSmileRight: 0.8 },

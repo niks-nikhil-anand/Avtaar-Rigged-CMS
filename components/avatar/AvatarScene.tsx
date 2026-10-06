@@ -14,14 +14,14 @@ class ViewerBoundary extends Component<{ children: ReactNode }, { error: string 
   state = { error: null as string | null };
   static getDerivedStateFromError(error: Error) { return { error: error.message }; }
   render() {
-    if (this.state.error) return <div className="viewer-error" role="alert"><h2>Unable to open the 3D viewer</h2><p>Check that /model.glb is available and your browser supports WebGL 2 with hardware acceleration.</p><pre>{this.state.error}</pre><button onClick={() => window.location.reload()}>Retry viewer</button></div>;
+    if (this.state.error) return <div className="viewer-error" role="alert"><h2>Unable to open the 3D viewer</h2><p>Check that the avatar model is available and your browser supports WebGL 2 with hardware acceleration.</p><pre>{this.state.error}</pre><button onClick={() => window.location.reload()}>Retry viewer</button></div>;
     return this.props.children;
   }
 }
 function LoadingOverlay({ ready }: { ready: boolean }) {
   const { progress, errors } = useProgress();
   if (ready && errors.length === 0) return null;
-  return <div className="loading-overlay" role="status"><span className="loading-dot" /><strong>{errors.length ? "Could not load model.glb" : "Preparing your avatar"}</strong><span>{errors.length ? "Check the asset and reload the viewer." : `${Math.round(progress)}% · Loading model and materials`}</span></div>;
+  return <div className="loading-overlay" role="status"><span className="loading-dot" /><strong>{errors.length ? "Could not load the avatar model" : "Preparing your avatar"}</strong><span>{errors.length ? "Check the asset and reload the viewer." : `${Math.round(progress)}% · Loading model and materials`}</span></div>;
 }
 function CameraRig({ revision, closeUp, report }: { revision: number; closeUp: boolean; report: ModelReport | null }) {
   const controls = useRef<OrbitControlsImpl>(null);
@@ -44,10 +44,11 @@ function CameraRig({ revision, closeUp, report }: { revision: number; closeUp: b
   }, [camera, size.width, size.height, revision, closeUp, report, invalidate]);
   return <OrbitControls ref={controls} makeDefault enablePan={false} minDistance={0.85} maxDistance={12} minPolarAngle={0.45} maxPolarAngle={Math.PI / 2 + 0.1} />;
 }
-export default function AvatarScene({ avatarOnly = false, onModelReady }: { avatarOnly?: boolean; onModelReady?: (model: AvatarReady | null) => void }) {
+export default function AvatarScene({ avatarOnly = false, closeUp: closeUpProp, onModelReady }: { avatarOnly?: boolean; closeUp?: boolean; onModelReady?: (model: AvatarReady | null) => void }) {
   const [model, setModel] = useState<AvatarReady | null>(null);
   const [debug, setDebug] = useState(true);
-  const [closeUp, setCloseUp] = useState(false);
+  const [closeUpState, setCloseUp] = useState(false);
+  const closeUp = closeUpProp ?? closeUpState;
   const [revision, setRevision] = useState(0);
   const [demo, setDemo] = useState(false);
   const demoRef = useRef<BlendDemoControls>(null);
@@ -59,7 +60,7 @@ export default function AvatarScene({ avatarOnly = false, onModelReady }: { avat
     <div className={`workspace-grid ${debug && !avatarOnly ? "" : "panel-hidden"}`}>
       <section className="viewer-section" aria-label="Interactive avatar viewer">
         {!avatarOnly && <>
-        <div className="viewer-toolbar"><span className="asset-label"><span className={`status-dot ${model ? "ready" : ""}`} />{model ? "model.glb · Ready" : "model.glb · Loading"}</span><div><button className="demo-button" disabled={!model} aria-pressed={demo} onClick={() => demoRef.current?.toggleDemo()}>{demo ? "Stop blend demo" : "Run blend demo"}</button><button onClick={() => setCloseUp((value) => !value)}>{closeUp ? "Full body" : "Face view"}</button><button onClick={() => setRevision((value) => value + 1)}>Reset camera</button><button aria-expanded={debug} onClick={() => setDebug((value) => !value)}>{debug ? "Hide controls" : "Show controls"}</button></div></div>
+        <div className="viewer-toolbar"><span className="asset-label"><span className={`status-dot ${model ? "ready" : ""}`} />{model ? `${modelProfile.url.slice(1)} · Ready` : `${modelProfile.url.slice(1)} · Loading`}</span><div><button className="demo-button" disabled={!model} aria-pressed={demo} onClick={() => demoRef.current?.toggleDemo()}>{demo ? "Stop blend demo" : "Run blend demo"}</button><button onClick={() => setCloseUp((value) => !value)}>{closeUp ? "Full body" : "Face view"}</button><button onClick={() => setRevision((value) => value + 1)}>Reset camera</button><button aria-expanded={debug} onClick={() => setDebug((value) => !value)}>{debug ? "Hide controls" : "Show controls"}</button></div></div>
         </>}
         <div className="canvas-shell"><ViewerBoundary>
           <Canvas shadows dpr={[1, 1.5]} camera={{ position: [0, 1.65, 5], fov: 38, near: 0.01, far: 100 }} gl={{ antialias: true }} fallback={<div className="viewer-error" role="alert">WebGL is unavailable. Enable hardware acceleration or use a supported browser.</div>}>

@@ -18,6 +18,8 @@ export interface BoneBinding {
   quaternion: Quaternion;
   position: Vector3;
   scale: Vector3;
+  /** Same-named bones in other skeletons of the asset, driven with the same offset. */
+  copies?: Omit<BoneBinding, "copies">[];
 }
 
 export interface ModelBindings {

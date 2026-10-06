@@ -1,13 +1,15 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import { useAvatarConversation } from "@/hooks/useAvatarConversation";
 import { emotions } from "@/avatar/engine/behaviorConfig";
 import AvatarViewer from "./AvatarViewer";
 
 export default function ConnectedAvatar() {
   const { ready, connection, behaviorState, emotion, micOn, micPending, muted, error, text, setText, transcripts, playback, recording, hasRecording, devices, device, setDevice, busy, connected, onModelReady, connect, disconnect, toggleMicrophone, sendText, stopAudio, setSpeakerMuted, setEmotion, testSpeaker, recordTest, playRecording } = useAvatarConversation();
+  const [closeUp, setCloseUp] = useState(false);
   return <div className="connected-avatar">
-    <AvatarViewer avatarOnly onModelReady={onModelReady} />
+    <AvatarViewer avatarOnly closeUp={closeUp} onModelReady={onModelReady} />
     <section className="conversation-dock" aria-label="Avatar conversation">
       <div className="conversation-heading"><Link href="/">Back to studio</Link><span role="status">{connection} · {recording ? "Recording locally" : behaviorState[0].toUpperCase() + behaviorState.slice(1)}{micOn ? " · Microphone on" : ""}</span></div>
       <div className="conversation-buttons">
@@ -15,6 +17,7 @@ export default function ConnectedAvatar() {
         <button disabled={!connected || micPending} onClick={() => void toggleMicrophone()}>{micPending ? "Opening microphone…" : micOn ? "Mute microphone" : "Start microphone"}</button>
         <button aria-pressed={muted} onClick={() => setSpeakerMuted(!muted)}>{muted ? "Unmute speaker" : "Mute speaker"}</button>
         <button onClick={stopAudio}>Stop audio</button>
+        <button aria-pressed={closeUp} onClick={() => setCloseUp((value) => !value)}>{closeUp ? "Full body" : "Face view"}</button>
         <button disabled={connection === "disconnected" && !playback.playing && !recording && !micPending} onClick={disconnect}>Disconnect</button>
       </div>
       <form className="conversation-input" onSubmit={(event) => { event.preventDefault(); void sendText(); }}><input aria-label="Message to Gemini" placeholder="Type a message to your avatar…" maxLength={4000} value={text} onChange={(event) => setText(event.target.value)} /><button disabled={!connected || !text.trim()} type="submit">Send</button></form>
