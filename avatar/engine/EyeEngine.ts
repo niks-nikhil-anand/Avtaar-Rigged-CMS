@@ -13,6 +13,7 @@ export class EyeEngine {
     if (Number.isFinite(x) && Number.isFinite(y)) this.lookTarget = { x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) };
   }
   releaseLookAt(): void { this.lookTarget = null; }
+  getLookAt(): { x: number; y: number } | null { return this.lookTarget ? { ...this.lookTarget } : null; }
   update(delta: number, state: BehaviorState, reducedMotion: boolean): { blink: AnimationChannels; gaze: AnimationChannels } {
     this.time += delta;
     const phase = this.time - this.nextBlink;
@@ -26,6 +27,6 @@ export class EyeEngine {
       this.nextGaze = this.time + 2 + this.random() * 3;
     }
     const target = this.lookTarget ?? (reducedMotion || state === "listening" ? { x: 0, y: 0 } : state === "thinking" ? { x: 0.35, y: 0.25 } : this.gaze);
-    return { blink: { "morph:eyeBlinkLeft": blink, "morph:eyeBlinkRight": blink }, gaze: { "bone:LeftEye:yaw": target.x * 0.12, "bone:RightEye:yaw": target.x * 0.12, "bone:LeftEye:pitch": -target.y * 0.09, "bone:RightEye:pitch": -target.y * 0.09 } };
+    return { blink: { "morph:eyeBlinkLeft": blink, "morph:eyeBlinkRight": blink }, gaze: { "bone:LeftEye:yaw": target.x * 0.17, "bone:RightEye:yaw": target.x * 0.17, "bone:LeftEye:pitch": -target.y * 0.12, "bone:RightEye:pitch": -target.y * 0.12 } };
   }
 }

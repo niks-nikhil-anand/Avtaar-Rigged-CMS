@@ -2,7 +2,10 @@ import type { ModelBindings } from "../types";
 import { AnimationMixer, animationPriorities, type AnimationChannels, type AnimationLayer } from "./AnimationMixer";
 import { FacialEngine } from "./FacialEngine";
 import { BehaviorController } from "./BehaviorController";
-import { boneLimit, visemes } from "./behaviorConfig";
+import { boneLimit, jawBoneGain, visemes } from "./behaviorConfig";
+import { PoseController } from "../pose/PoseController";
+
+const poseLimit = Math.PI;
 
 export interface AnimationSystem {
   priority: number;
@@ -16,6 +19,7 @@ export class AvatarEngine {
   readonly mixer = new AnimationMixer();
   readonly face: FacialEngine;
   readonly behavior: BehaviorController;
+  readonly pose = new PoseController();
   private systems = new Map<string, AnimationSystem>();
   private boneOffsets = new Map<string, { pitch: number; yaw: number; roll: number }>();
   private elapsed = 0;
@@ -27,6 +31,8 @@ export class AvatarEngine {
     this.behavior = new BehaviorController(this, bindings);
   }
 
+  /** True when the loaded model can show this morph, so UI can disable controls that would do nothing. */
+  hasMorph(name: string): boolean { return this.bindings.morphs.has(name); }
   get status(): string { return this.state; }
   get time(): number { return this.elapsed; }
   get systemCount(): number { return this.systems.size; }
@@ -97,16 +103,21 @@ export class AvatarEngine {
       }
     }
     this.face.update(step);
+    this.pose.update(step);
     const alpha = 1 - Math.exp(-14 * step);
     for (const name of this.bindings.bones.keys()) {
       const current = this.boneOffsets.get(name) ?? { pitch: 0, yaw: 0, roll: 0 };
       for (const axis of ["pitch", "yaw", "roll"] as const) {
         const limit = boneLimit(name, axis);
-        const target = Math.max(-limit, Math.min(limit, this.mixer.resolve(`bone:${name}:${axis}`)));
+        // Behavior (idle, gaze) stays within its small limit; the pose adds on top and may use the full range.
+        const behavior = Math.max(-limit, Math.min(limit, this.mixer.resolve(`bone:${name}:${axis}`)));
+        // The jaw bone opens the mouth; it follows the same "jawOpen" value the morph rigs use.
+        const jaw = name === "Jaw" && axis === "roll" ? this.face.control("jawOpen") * jawBoneGain : 0;
+        const target = Math.max(-poseLimit, Math.min(poseLimit, behavior + this.pose.offset(name, axis) + jaw));
         current[axis] += (target - current[axis]) * alpha;
         if (Math.abs(current[axis]) < 1e-6) current[axis] = 0;
       }
-      this.bindings.setBoneRotation(name, current.pitch, current.yaw, current.roll);
+      this.bindings.setBoneRotation(name, current.pitch, current.yaw, current.roll, true);
       this.boneOffsets.set(name, current);
     }
   }
@@ -114,6 +125,7 @@ export class AvatarEngine {
   /** Immediate exact reset, including running sources so the next frame remains neutral. */
   reset(): void {
     this.behavior.reset();
+    this.pose.reset();
     for (const source of [...this.systems.keys()]) this.removeSystem(source);
     this.face.clear();
     this.mixer.clear();

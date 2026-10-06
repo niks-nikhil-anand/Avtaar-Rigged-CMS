@@ -14,19 +14,32 @@ export const morphAliases: Record<string, string[]> = {
   mouthFrownLeft: ["Mouth_Corner_Depress_L"], mouthFrownRight: ["Mouth_Corner_Depress_R"],
   mouthPressLeft: ["Mouth_Lips_Press_L"], mouthPressRight: ["Mouth_Lips_Press_R"],
   mouthPucker: ["Mouth_Lips_Purse_UL", "Mouth_Lips_Purse_UR", "Mouth_Lips_Purse_DL", "Mouth_Lips_Purse_DR"],
-  aa: ["V_Open"], PP: ["V_Explosive"], FF: ["V_Dental_Lip"], oh: ["V_Tight_O"],
-  E: ["V_Wide"], CH: ["V_Affricate"], SS: ["V_Tight"], sil: ["V_None"],
+  // Visemes use the rig's own V_ mouth shapes, shared where sensible (oh/ou, E/ih); the jaw opening in visemeJaw tells them apart.
+  aa: ["V_Open"], PP: ["V_Explosive"], FF: ["V_Dental_Lip"], oh: ["V_Tight_O"], ou: ["V_Tight_O"], RR: ["V_Tight_O"],
+  E: ["V_Wide"], ih: ["V_Wide"], CH: ["V_Affricate"], SS: ["V_Tight"], sil: ["V_None"],
+  DD: ["V_Lip_Open", "V_Tongue_up"], kk: ["V_Lip_Open"], nn: ["V_Lip_Open"], TH: ["V_Tongue_Out", "V_Lip_Open"],
 };
 
 export type BoneAxis = "x" | "y" | "z" | "-x" | "-y" | "-z";
+
+const sides = [["Left", "L"], ["Right", "R"]] as const;
+const limbParts = ["Clavicle", "Upperarm", "Forearm", "Hand", "Thigh", "Calf", "Foot", "ToeBase"];
+const fingerParts = ["Index", "Mid", "Ring", "Pinky", "Thumb"].flatMap((name) => [1, 2, 3].map((joint) => `${name}${joint}`));
+/** Canonical names for every posable body bone: LeftUpperarm -> CC_Base_L_Upperarm, RightIndex2 -> CC_Base_R_Index2, and so on. */
+const bodyAliases: Record<string, string> = Object.fromEntries(
+  sides.flatMap(([side, code]) => [...limbParts, ...fingerParts].map((part) => [`${side}${part}`, `CC_Base_${code}_${part}`])),
+);
 
 export const modelProfile = {
   url: "/avtaar-rigged-blender/Untitled.slim.glb",
   displayHeight: 2.8,
   controls: ["eyeBlinkLeft", "eyeBlinkRight", "jawOpen", "mouthSmileLeft", "mouthSmileRight", "mouthFrownLeft", "mouthFrownRight"],
   bones: ["Head", "Neck", "LeftEye", "RightEye"],
-  /** Canonical engine bone name → bone name in the asset. The asset may hold several skeleton copies per name. Arms are left unmapped: both assets already rest in a relaxed pose. */
+  /** Canonical engine bone name → bone name in the asset. The asset may hold several skeleton copies per name. The old "LeftArm"/"RightArm" names stay unmapped: arm poses go through the pose system, not behavior channels. */
   boneAliases: {
+    ...bodyAliases,
+    Waist: "CC_Base_Waist",
+    Jaw: "CC_Base_JawRoot",
     Head: "CC_Base_Head",
     Neck: "CC_Base_NeckTwist01",
     LeftEye: "CC_Base_L_Eye",
@@ -38,6 +51,9 @@ export const modelProfile = {
   boneAxes: {
     head: { pitch: "-z", yaw: "x", roll: "-y" },
     neck_02: { pitch: "-z", yaw: "x", roll: "-y" },
+    // This rig's eye bones point backward along local Y and up along local Z, so a horizontal turn is a rotation about Z.
+    CC_Base_L_Eye: { pitch: "x", yaw: "z", roll: "y" },
+    CC_Base_R_Eye: { pitch: "x", yaw: "z", roll: "y" },
   } as Record<string, Record<"pitch" | "yaw" | "roll", BoneAxis>>,
   presets: {
     Blink: { eyeBlinkLeft: 1, eyeBlinkRight: 1 },

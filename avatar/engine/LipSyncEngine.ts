@@ -1,5 +1,5 @@
 import type { AnimationChannels } from "./AnimationMixer";
-import { clamp01, visemes, type Viseme } from "./behaviorConfig";
+import { clamp01, visemeJaw, visemes, type Viseme } from "./behaviorConfig";
 
 export class LipSyncEngine {
   private speaking = false;
@@ -23,8 +23,15 @@ export class LipSyncEngine {
     if (target === 0 && this.smoothed < 0.001) this.smoothed = 0;
     const total = [...this.shapes.values()].reduce((sum, value) => sum + value, 0);
     const channels: AnimationChannels = {};
-    for (const name of visemes) if (this.supported.has(name)) channels[`morph:${name}`] = (this.shapes.get(name) ?? 0) / Math.max(1, total);
-    if (this.supported.has("jawOpen")) channels["morph:jawOpen"] = this.smoothed * 0.75 * (1 - Math.min(1, total));
+    let shapeJaw = 0;
+    for (const name of visemes) {
+      if (!this.supported.has(name)) continue;
+      const weight = (this.shapes.get(name) ?? 0) / Math.max(1, total);
+      channels[`morph:${name}`] = weight;
+      shapeJaw += weight * visemeJaw[name];
+    }
+    // Take the larger of the two openings so a viseme never doubles the amplitude-driven jaw.
+    if (this.supported.has("jawOpen")) channels["morph:jawOpen"] = Math.max(this.smoothed * 0.75 * (1 - Math.min(1, total)), shapeJaw);
     return channels;
   }
 }

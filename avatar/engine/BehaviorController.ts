@@ -54,6 +54,7 @@ export class BehaviorController {
   setReducedMotion(value: boolean): void { this.reducedMotion = value; }
   setLookAt(x: number, y: number): void { this.eyes.setLookAt(x, y); }
   releaseLookAt(): void { this.eyes.releaseLookAt(); }
+  getLookAt(): { x: number; y: number } | null { return this.eyes.getLookAt(); }
   reset(): void {
     this.disable(); this.state = "idle"; this.emotion.setEmotion("neutral", 0.7);
     this.eyes = new EyeEngine(this.random); this.idle = new IdleEngine();

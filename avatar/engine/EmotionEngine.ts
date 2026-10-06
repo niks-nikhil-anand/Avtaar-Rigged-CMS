@@ -3,11 +3,11 @@ import { clamp01, type Emotion } from "./behaviorConfig";
 
 const profiles: Record<Emotion, Record<string, number>> = {
   neutral: {},
-  happy: { mouthSmileLeft: 0.7, mouthSmileRight: 0.7, cheekSquintLeft: 0.15, cheekSquintRight: 0.15 },
-  sad: { mouthFrownLeft: 0.5, mouthFrownRight: 0.5, browInnerUp: 0.45 },
-  angry: { browDownLeft: 0.65, browDownRight: 0.65, eyeSquintLeft: 0.2, eyeSquintRight: 0.2, mouthPressLeft: 0.2, mouthPressRight: 0.2 },
-  surprised: { browInnerUp: 0.6, browOuterUpLeft: 0.55, browOuterUpRight: 0.55, eyeWideLeft: 0.55, eyeWideRight: 0.55, jawOpen: 0.2 },
-  thinking: { browDownLeft: 0.15, browInnerUp: 0.2, mouthPucker: 0.1 },
+  happy: { mouthSmileLeft: 0.95, mouthSmileRight: 0.95, cheekSquintLeft: 0.35, cheekSquintRight: 0.35 },
+  sad: { mouthFrownLeft: 0.9, mouthFrownRight: 0.9, browInnerUp: 0.85 },
+  angry: { browDownLeft: 1, browDownRight: 1, eyeSquintLeft: 0.45, eyeSquintRight: 0.45, mouthPressLeft: 0.45, mouthPressRight: 0.45 },
+  surprised: { browInnerUp: 0.9, browOuterUpLeft: 0.85, browOuterUpRight: 0.85, eyeWideLeft: 0.95, eyeWideRight: 0.95, jawOpen: 0.2 },
+  thinking: { browDownLeft: 0.3, browInnerUp: 0.3, mouthPucker: 0.2 },
 };
 export class EmotionEngine {
   emotion: Emotion = "neutral";

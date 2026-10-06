@@ -38,10 +38,10 @@ export function resolveBindings(root: Object3D): ModelBindings {
       if (!Number.isFinite(weight)) return;
       for (const entry of morphs.get(name) ?? []) entry.mesh.morphTargetInfluences![entry.index] = MathUtils.clamp(weight, 0, 1);
     },
-    setBoneRotation(name, pitch, yaw, roll = 0) {
+    setBoneRotation(name, pitch, yaw, roll = 0, wide = false) {
       const entry = bones.get(name);
       if (!entry || ![pitch, yaw, roll].every(Number.isFinite)) return;
-      const clamp = (value: number, axis: string) => MathUtils.clamp(value, -boneLimit(name, axis), boneLimit(name, axis));
+      const clamp = (value: number, axis: string) => { const limit = wide ? Math.PI : boneLimit(name, axis); return MathUtils.clamp(value, -limit, limit); };
       const angles = { pitch: clamp(pitch, "pitch"), yaw: clamp(yaw, "yaw"), roll: clamp(roll, "roll") };
       const axes = modelProfile.boneAxes[entry.bone.name];
       const local = { x: 0, y: 0, z: 0 };

@@ -27,6 +27,7 @@ export interface ModelBindings {
   bones: Map<string, BoneBinding>;
   unsupported: string[];
   setMorph: (name: string, weight: number) => void;
-  setBoneRotation: (name: string, pitch: number, yaw: number, roll?: number) => void;
+  /** `wide` allows full-range pose angles; otherwise offsets are limited to the small behavior range. */
+  setBoneRotation: (name: string, pitch: number, yaw: number, roll?: number, wide?: boolean) => void;
   reset: () => void;
 }

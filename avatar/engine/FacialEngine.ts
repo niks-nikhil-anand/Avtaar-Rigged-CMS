@@ -1,4 +1,4 @@
-import type { ModelBindings } from "../types";
+import type { ModelBindings, MorphBinding } from "../types";
 import { AnimationMixer, animationPriorities, type AnimationChannels } from "./AnimationMixer";
 
 export class FacialEngine {
@@ -24,6 +24,9 @@ export class FacialEngine {
     this.setExpression({ ...this.targets.get(source), [name]: value }, source, priority);
   }
 
+  /** The weights currently requested by one source (a copy), e.g. the manual sliders on "debug:morph". */
+  getExpression(source = "expression"): Record<string, number> { return { ...this.targets.get(source) }; }
+
   resetExpression(source = "expression"): void {
     this.targets.delete(source);
     this.mixer.removeLayer(source);
@@ -45,18 +48,32 @@ export class FacialEngine {
     }
   }
 
+  private resolved = new Map<MorphBinding, { target: number; alpha: number }>();
+
+  /** The value a control is being driven to right now (0 while silenced), for bone-driven features like the jaw. */
+  control(name: string): number {
+    return this.neutralControls.has(name) ? 0 : Math.max(0, Math.min(1, this.mixer.resolve(`morph:${name}`)));
+  }
+
   update(delta: number): void {
     if (!Number.isFinite(delta) || delta <= 0) return;
+    const resolved = this.resolved;
+    resolved.clear();
     for (const [name, entries] of this.bindings.morphs) {
       const alpha = 1 - Math.exp(-(name.startsWith("eyeBlink") ? 45 : this.damping) * delta);
       for (const entry of entries) {
         const target = this.neutralControls.has(name) ? entry.initial : Math.max(0, Math.min(1, this.mixer.resolve(`morph:${name}`, entry.initial)));
-        const influences = entry.mesh.morphTargetInfluences;
-        if (!influences) continue;
-        const current = influences[entry.index];
-        const next = current + (target - current) * alpha;
-        influences[entry.index] = Math.abs(next - target) < 1e-6 ? target : next;
+        // Several names (e.g. visemes "oh" and "ou") can share one rig shape; the strongest request wins instead of fighting.
+        const existing = resolved.get(entry);
+        if (!existing || target > existing.target) resolved.set(entry, { target, alpha });
       }
+    }
+    for (const [entry, { target, alpha }] of resolved) {
+      const influences = entry.mesh.morphTargetInfluences;
+      if (!influences) continue;
+      const current = influences[entry.index];
+      const next = current + (target - current) * alpha;
+      influences[entry.index] = Math.abs(next - target) < 1e-6 ? target : next;
     }
   }
 }
