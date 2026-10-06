@@ -21,7 +21,7 @@ export const morphAliases: Record<string, string[]> = {
 export type BoneAxis = "x" | "y" | "z" | "-x" | "-y" | "-z";
 
 export const modelProfile = {
-  url: "/avtaar-rigged-blender/Untitled.glb",
+  url: "/avtaar-rigged-blender/Untitled.slim.glb",
   displayHeight: 2.8,
   controls: ["eyeBlinkLeft", "eyeBlinkRight", "jawOpen", "mouthSmileLeft", "mouthSmileRight", "mouthFrownLeft", "mouthFrownRight"],
   bones: ["Head", "Neck", "LeftEye", "RightEye"],

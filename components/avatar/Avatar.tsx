@@ -28,6 +28,10 @@ export default function Avatar({ onReady }: { onReady: (model: AvatarReady | nul
       if (node instanceof Mesh) {
         node.castShadow = true;
         node.receiveShadow = true;
+        // This export has no alpha on the eye-occlusion and tear-line shells, so they render as opaque white over the eyes.
+        for (const material of Array.isArray(node.material) ? node.material : [node.material]) {
+          if (/^Std_(Eye_Occlusion|Tearline)_[LR]$/.test(material.name)) material.visible = false;
+        }
       }
     });
     return { root, scale, offset: [-center.x * scale, -bounds.min.y * scale, -center.z * scale] as [number, number, number], bindings: resolveBindings(root), report: inspectModel(root, gltf.animations) };
