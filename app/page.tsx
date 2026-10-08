@@ -1,3 +1,3 @@
-import AvatarViewer from "@/components/avatar/AvatarViewer";
+import ConnectedAvatar from "@/components/avatar/ConnectedAvatar";
 
-export default function Home() { return <main><AvatarViewer /></main>; }
+export default function Home() { return <main><ConnectedAvatar /></main>; }

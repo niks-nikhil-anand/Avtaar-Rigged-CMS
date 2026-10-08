@@ -1,2 +1,5 @@
-import { PlaceholderPage } from "@/components/admin/AdminPages";
-export default function AppearancePage() { return <PlaceholderPage title="Appearance" description="Manage lighting, backgrounds, skin, hair, clothing, and accessory presets." />; }
+import AvatarViewer from "@/components/avatar/AvatarViewer";
+
+export default function AppearancePage() {
+  return <main className="admin-appearance-page"><AvatarViewer /></main>;
+}
