@@ -13,7 +13,7 @@ const activity = (state: string) => state[0].toUpperCase() + state.slice(1);
 
 /** Gemini connection state and the few controls a conversation needs. */
 export default function GeminiPanel({ conversation }: { conversation: Conversation }) {
-  const { ready, connection, behaviorState, micOn, micPending, muted, error, text, setText, transcripts, busy, connected, connect, disconnect, toggleMicrophone, sendText, stopAudio, setSpeakerMuted } = conversation;
+  const { ready, connection, behaviorState, micOn, micPending, muted, error, text, setText, transcripts, syncOffsetMs, setSyncOffset, busy, connected, connect, disconnect, toggleMicrophone, sendText, stopAudio, setSpeakerMuted } = conversation;
   const info = status[connection];
   const open = connected || busy;
   return <aside className="debug-panel gemini-panel" aria-label="Gemini connection">
@@ -36,6 +36,8 @@ export default function GeminiPanel({ conversation }: { conversation: Conversati
           <button onClick={stopAudio}>Stop audio</button>
         </div>
       </div>
+
+      <details className="sync-settings"><summary>Audio sync</summary><label className="slider-control"><span>Safe mouth delay<output>{syncOffsetMs} ms</output></span><input type="range" min="0" max="200" step="5" value={syncOffsetMs} onChange={(event) => setSyncOffset(Number(event.target.value))} /></label><p className="muted">Output latency is compensated automatically. This delay-only offset prevents the mouth from leading audible speech.</p></details>
 
       <form className="conversation-input" onSubmit={(event) => { event.preventDefault(); void sendText(); }}>
         <input aria-label="Message to Gemini" placeholder={connected ? "Type a message to your avatar…" : "Connect to send a message"} maxLength={4000} value={text} disabled={!connected} onChange={(event) => setText(event.target.value)} />

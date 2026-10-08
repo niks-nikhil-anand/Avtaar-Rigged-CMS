@@ -1,0 +1,202 @@
+{
+  "generatedBy": "scripts/generate-lip-sync-fixtures.mjs",
+  "purpose": "Deterministic audio fixtures for playback-clock and viseme benchmarks",
+  "clips": [
+    {
+      "id": "01-slow-vowels",
+      "file": "01-slow-vowels.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.788,
+      "speed": "slow",
+      "content": "vowels",
+      "voiceProfile": "neutral",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O"
+      ]
+    },
+    {
+      "id": "02-normal-vowels",
+      "file": "02-normal-vowels.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.308,
+      "speed": "normal",
+      "content": "vowels",
+      "voiceProfile": "neutral",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O"
+      ]
+    },
+    {
+      "id": "03-fast-vowels",
+      "file": "03-fast-vowels.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 0.948,
+      "speed": "fast",
+      "content": "vowels",
+      "voiceProfile": "neutral",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O"
+      ]
+    },
+    {
+      "id": "04-plosives-slow",
+      "file": "04-plosives-slow.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.788,
+      "speed": "slow",
+      "content": "plosives",
+      "voiceProfile": "low",
+      "expectedEvents": [
+        "P",
+        "B",
+        "M"
+      ]
+    },
+    {
+      "id": "05-plosives-normal",
+      "file": "05-plosives-normal.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.308,
+      "speed": "normal",
+      "content": "plosives",
+      "voiceProfile": "low",
+      "expectedEvents": [
+        "P",
+        "B",
+        "M"
+      ]
+    },
+    {
+      "id": "06-plosives-fast",
+      "file": "06-plosives-fast.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 0.948,
+      "speed": "fast",
+      "content": "plosives",
+      "voiceProfile": "low",
+      "expectedEvents": [
+        "P",
+        "B",
+        "M"
+      ]
+    },
+    {
+      "id": "07-silence-gaps",
+      "file": "07-silence-gaps.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.188,
+      "speed": "normal",
+      "content": "silence",
+      "voiceProfile": "neutral",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O",
+        "P",
+        "B",
+        "M",
+        "silence"
+      ]
+    },
+    {
+      "id": "08-vowels-low-voice",
+      "file": "08-vowels-low-voice.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.308,
+      "speed": "normal",
+      "content": "vowels",
+      "voiceProfile": "low",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O"
+      ]
+    },
+    {
+      "id": "09-vowels-high-voice",
+      "file": "09-vowels-high-voice.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.308,
+      "speed": "normal",
+      "content": "vowels",
+      "voiceProfile": "high",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O"
+      ]
+    },
+    {
+      "id": "10-mixed-phrase",
+      "file": "10-mixed-phrase.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.526,
+      "speed": "normal",
+      "content": "mixed",
+      "voiceProfile": "neutral",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O",
+        "P",
+        "B",
+        "M",
+        "silence"
+      ]
+    },
+    {
+      "id": "11-mixed-fast",
+      "file": "11-mixed-fast.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 1.106,
+      "speed": "fast",
+      "content": "mixed",
+      "voiceProfile": "high",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O",
+        "P",
+        "B",
+        "M",
+        "silence"
+      ]
+    },
+    {
+      "id": "12-mixed-slow",
+      "file": "12-mixed-slow.wav",
+      "sampleRate": 16000,
+      "channels": 1,
+      "durationSeconds": 2.086,
+      "speed": "slow",
+      "content": "mixed",
+      "voiceProfile": "low",
+      "expectedEvents": [
+        "A",
+        "E",
+        "O",
+        "P",
+        "B",
+        "M",
+        "silence"
+      ]
+    }
+  ]
+}

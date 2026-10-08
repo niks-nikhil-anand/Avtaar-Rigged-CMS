@@ -15,6 +15,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { ArrowRightIcon, SaveIcon } from "@/components/ui/icons";
 import { sceneThemes, findTheme, defaultThemeId, themeStorageKey, customStorageKey, customThemeId, parseCustomTheme, cloneTheme, type SceneTheme } from "./sceneThemes";
 import AvatarDebugPanel, { type BlendDemoControls } from "./AvatarDebugPanel";
+import DebugMetricsOverlay from "./DebugMetricsOverlay";
+import type { PlaybackFrame } from "@/services/audio/PcmPlayer";
 
 class ViewerBoundary extends Component<{ children: ReactNode }, { error: string | null }> {
   state = { error: null as string | null };
@@ -56,7 +58,7 @@ function CameraRig({ revision, closeUp, report }: { revision: number; closeUp: b
   }, [camera, size.width, size.height, revision, closeUp, report, invalidate]);
   return <OrbitControls ref={controls} makeDefault enablePan={false} minDistance={0.85} maxDistance={12} minPolarAngle={0.45} maxPolarAngle={Math.PI / 2 + 0.1} />;
 }
-export default function AvatarScene({ variant = "studio", onModelReady, sidebar }: { variant?: "studio" | "connected"; onModelReady?: (model: AvatarReady | null) => void; sidebar?: ReactNode }) {
+export default function AvatarScene({ variant = "studio", onModelReady, sidebar, playback }: { variant?: "studio" | "connected"; onModelReady?: (model: AvatarReady | null) => void; sidebar?: ReactNode; playback?: PlaybackFrame }) {
   const studio = variant === "studio";
   const [model, setModel] = useState<AvatarReady | null>(null);
   const [debug, setDebug] = useState(true);
@@ -114,7 +116,7 @@ export default function AvatarScene({ variant = "studio", onModelReady, sidebar 
         {studio && <>
         <div className="viewer-toolbar"><span className="asset-label"><span className={`status-dot ${model ? "ready" : ""}`} />{model ? `${modelProfile.url.slice(1)} · Ready` : `${modelProfile.url.slice(1)} · Loading`}</span><div><button className="demo-button" disabled={!model} aria-pressed={demo} onClick={() => demoRef.current?.toggleDemo()}>{demo ? "Stop blend demo" : "Run blend demo"}</button><button className="save-button" disabled={!model} onClick={save} title="Save pose, face, behavior, lighting and camera so /avtaar-connected shows the same look"><SaveIcon />Save look</button><button onClick={() => setCloseUp((value) => !value)}>{closeUp ? "Full body" : "Face view"}</button><button onClick={() => setRevision((value) => value + 1)}>Reset camera</button><button aria-expanded={debug} onClick={() => setDebug((value) => !value)}>{debug ? "Hide panel" : "Show panel"}</button></div></div>
         </>}
-        <div className="canvas-shell" style={{ background: theme.horizon }}>{studio && <ThemePicker themeId={custom ? customThemeId : themeId} label={theme.label} onChange={chooseTheme} />}<ViewerBoundary>
+        <div className="canvas-shell" style={{ background: theme.horizon }}>{studio && <ThemePicker themeId={custom ? customThemeId : themeId} label={theme.label} onChange={chooseTheme} />}<DebugMetricsOverlay model={model} playback={playback} /><ViewerBoundary>
           <Canvas shadows dpr={[1, 1.5]} camera={{ position: [0, 1.65, 5], fov: 38, near: 0.01, far: 100 }} gl={{ antialias: true }} fallback={<div className="viewer-error" role="alert">WebGL is unavailable. Enable hardware acceleration or use a supported browser.</div>}>
             <color attach="background" args={[theme.horizon]} /><fog attach="fog" args={[theme.horizon, 12, 28]} />
             <SceneBackdrop theme={theme} />

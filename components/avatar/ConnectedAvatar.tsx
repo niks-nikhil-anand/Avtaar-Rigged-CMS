@@ -17,5 +17,5 @@ export default function ConnectedAvatar() {
     // The saved expression is what the avatar returns to between and after conversations.
     if (saved) setBaselineEmotion(saved.face.emotion, saved.face.intensity);
   }, [onModelReady, setBaselineEmotion]);
-  return <AvatarViewer variant="connected" onModelReady={handleModelReady} sidebar={<GeminiPanel conversation={conversation} />} />;
+  return <AvatarViewer variant="connected" onModelReady={handleModelReady} playback={conversation.playback} sidebar={<GeminiPanel conversation={conversation} />} />;
 }

@@ -38,6 +38,7 @@ export function useAvatarConversation() {
   const [hasRecording, setHasRecording] = useState(false);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [device, setDevice] = useState("");
+  const [syncOffsetMs, setSyncOffsetState] = useState(0);
 
   const syncAvatar = useCallback(() => { setBehaviorState(coordinator.state); }, [coordinator]);
   const onModelReady = useCallback((model: AvatarReady | null) => { coordinator.attach(model?.engine ?? null); setReady(!!model); syncAvatar(); }, [coordinator, syncAvatar]);
@@ -177,8 +178,9 @@ export function useAvatarConversation() {
   const connected = connection === "connected";
   const stopAudio = () => { const value = resources.current; if (value) { value.operation++; if (micPending) value.mic.stop(); } setMicPending(false); stopSample(); value?.live.stopResponse(); coordinator.interrupt(); syncAvatar(); };
   const setSpeakerMuted = (next: boolean) => { setMuted(next); resources.current?.player.setMuted(next); };
+  const setSyncOffset = (value: number) => { const safe = Math.max(0, Math.min(200, Number.isFinite(value) ? value : 0)); setSyncOffsetState(safe); resources.current?.player.setSyncOffsetMs(safe); };
   const setEmotion = (name: string, intensity = 0.7) => { setEmotionState(coordinator.setEmotion(name, intensity)); };
   /** Sets the expression the avatar returns to between and after sessions (the saved look). */
   const setBaselineEmotion = useCallback((name: string, intensity = 0.7) => { setEmotionState(coordinator.setBaseline(name, intensity)); }, [coordinator]);
-  return { ready, connection, behaviorState, emotion, micOn, micPending, muted, error, text, setText, transcripts, playback, recording, hasRecording, devices, device, setDevice, busy, connected, onModelReady, connect, disconnect, toggleMicrophone, sendText, stopAudio, setSpeakerMuted, setEmotion, setBaselineEmotion, testSpeaker, recordTest, playRecording };
+  return { ready, connection, behaviorState, emotion, micOn, micPending, muted, error, text, setText, transcripts, playback, syncOffsetMs, setSyncOffset, recording, hasRecording, devices, device, setDevice, busy, connected, onModelReady, connect, disconnect, toggleMicrophone, sendText, stopAudio, setSpeakerMuted, setEmotion, setBaselineEmotion, testSpeaker, recordTest, playRecording };
 }
