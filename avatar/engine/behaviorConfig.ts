@@ -10,6 +10,7 @@ export const visemeJaw: Record<Viseme, number> = {
 };
 export function boneLimit(name: string, axis = "pitch"): number {
   if (name === "LeftEye" || name === "RightEye") return 0.18;
+  if (/^(Left|Right)(Clavicle|Upperarm|Forearm|Hand)$/.test(name)) return 0.65;
   if ((name === "LeftArm" || name === "RightArm") && axis === "pitch") return 1.25;
   return 0.25;
 }

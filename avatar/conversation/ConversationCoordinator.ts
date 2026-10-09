@@ -70,6 +70,7 @@ export class ConversationCoordinator {
     const silent = !this.frame.playing || this.frame.amplitude < 0.025 || this.userSpeaking;
     if (force || silent !== this.silent) engine.setSpeechSilence(silent);
     this.silent = silent;
+    engine.behavior.setProsodyInput(silent ? null : { energy: this.frame.amplitude, speaking: true });
     engine.behavior.lips.setAmplitude(silent ? 0 : this.frame.amplitude);
     engine.behavior.setEmotion(this.emotion, this.intensity);
   }

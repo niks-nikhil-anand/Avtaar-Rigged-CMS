@@ -6,6 +6,11 @@ import { createBlendDemo } from "@/avatar/engine/createBlendDemo";
 import { animationPriorities } from "@/avatar/engine/AnimationMixer";
 import AvatarBehaviorPanel from "./AvatarBehaviorPanel";
 import AvatarPosePanel from "./AvatarPosePanel";
+import EyeCalibrationPanel from "./EyeCalibrationPanel";
+import GestureCalibrationPanel from "./GestureCalibrationPanel";
+import HeadEyeCoordinationPanel from "./HeadEyeCoordinationPanel";
+import HeadCalibrationPanel from "./HeadCalibrationPanel";
+import ProsodyCalibrationPanel from "./ProsodyCalibrationPanel";
 import LightingPanel, { type LightingControls } from "./LightingPanel";
 import { ActivityIcon, FaceIcon, LayersIcon, LightIcon, PoseIcon, ResetIcon, SaveIcon } from "@/components/ui/icons";
 
@@ -111,6 +116,11 @@ export default function AvatarDebugPanel({ model, demoRef, onDemoChange, lightin
     <LightingPanel lighting={lighting} />
     <section className="tab-section" data-tab="inspect">
     <div className="stat-grid"><div><strong>{report.meshes.length}</strong><span>Meshes</span></div><div><strong>{report.bones.length}</strong><span>Bones</span></div><div><strong>{names.length}</strong><span>Shapes</span></div></div>
+    <EyeCalibrationPanel engine={engine} />
+    <HeadCalibrationPanel engine={engine} />
+    <HeadEyeCoordinationPanel engine={engine} />
+    <ProsodyCalibrationPanel engine={engine} />
+    <GestureCalibrationPanel engine={engine} />
     <details><summary>Head & eye rotation</summary><p className="muted">Small offsets from the original local bone pose.</p>{modelProfile.bones.map((name) => <div key={name}>{["pitch", "yaw"].map((axis) => {
       const key = `${name}-${axis}`;
       const limit = name.includes("Eye") ? 0.18 : 0.25;

@@ -1,32 +1,30 @@
 import type { AnimationChannels } from "./AnimationMixer";
 import type { BehaviorState } from "./behaviorConfig";
+import { BlinkCoordinator, defaultBlinkConfig } from "./BlinkCoordinator";
+import { EyeController, defaultEyeRigConfig } from "./EyeController";
+import type { EyeTarget } from "./EyeController";
+import { GazeBehaviorEngine } from "./GazeBehaviorEngine";
+import { SaccadeEngine, defaultSaccadeConfig } from "./SaccadeEngine";
 
 export class EyeEngine {
-  private time = 0;
-  private nextBlink: number;
-  private nextGaze = 0;
-  private gaze = { x: 0, y: 0 };
   private lookTarget: { x: number; y: number } | null = null;
-  constructor(private random: () => number = Math.random) { this.nextBlink = this.interval(); }
-  private interval() { return 2.8 + Math.max(0, Math.min(1, this.random())) * 3.2; }
+  private blinks: BlinkCoordinator;
+  private behavior = new GazeBehaviorEngine();
+  private controller = new EyeController(defaultEyeRigConfig);
+  private saccades: SaccadeEngine;
+  constructor(private random: () => number = Math.random) {
+    this.blinks = new BlinkCoordinator({ ...defaultBlinkConfig, random });
+    this.saccades = new SaccadeEngine({ ...defaultSaccadeConfig, random });
+  }
   setLookAt(x: number, y: number): void {
     if (Number.isFinite(x) && Number.isFinite(y)) this.lookTarget = { x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) };
   }
   releaseLookAt(): void { this.lookTarget = null; }
   getLookAt(): { x: number; y: number } | null { return this.lookTarget ? { ...this.lookTarget } : null; }
-  update(delta: number, state: BehaviorState, reducedMotion: boolean): { blink: AnimationChannels; gaze: AnimationChannels } {
-    this.time += delta;
-    const phase = this.time - this.nextBlink;
-    let blink = 0;
-    if (phase >= 0 && phase < 0.32) {
-      const value = phase < 0.09 ? phase / 0.09 : phase < 0.16 ? 1 : 1 - (phase - 0.16) / 0.16;
-      blink = value * value * (3 - 2 * value);
-    } else if (phase >= 0.32) this.nextBlink += 0.32 + this.interval();
-    if (this.time >= this.nextGaze) {
-      this.gaze = { x: (this.random() - 0.5) * 0.6, y: (this.random() - 0.5) * 0.3 };
-      this.nextGaze = this.time + 2 + this.random() * 3;
-    }
-    const target = this.lookTarget ?? (reducedMotion || state === "listening" ? { x: 0, y: 0 } : state === "thinking" ? { x: 0.35, y: 0.25 } : this.gaze);
-    return { blink: { "morph:eyeBlinkLeft": blink, "morph:eyeBlinkRight": blink }, gaze: { "bone:LeftEye:yaw": target.x * 0.17, "bone:RightEye:yaw": target.x * 0.17, "bone:LeftEye:pitch": -target.y * 0.12, "bone:RightEye:pitch": -target.y * 0.12 } };
+  update(delta: number, state: BehaviorState, reducedMotion: boolean): { blink: AnimationChannels; gaze: AnimationChannels; target: EyeTarget } {
+    const blink = this.blinks.update({ deltaTime: delta, behaviorState: state, reducedMotion }).blinkWeight;
+    const target = this.lookTarget ?? this.behavior.update({ state, deltaTime: delta, reducedMotion });
+    this.controller.setTarget(this.saccades.update({ baseTarget: target, deltaTime: delta, reducedMotion, behaviorState: state }));
+    return { blink: { "morph:eyeBlinkLeft": blink, "morph:eyeBlinkRight": blink }, gaze: this.controller.toChannels(this.controller.update(delta)), target: { ...target } };
   }
 }

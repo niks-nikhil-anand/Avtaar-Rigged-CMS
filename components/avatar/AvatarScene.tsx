@@ -106,6 +106,7 @@ export default function AvatarScene({ variant = "studio", onModelReady, sidebar,
     if (next && savedRef.current) applyAvatarState(next.engine, savedRef.current, variant);
     setModel(next); onModelReady?.(next);
   }, [onModelReady, variant]);
+  const cameraControls = <><button disabled={!model} aria-pressed={closeUp} onClick={() => setCloseUp((value) => !value)}>{closeUp ? "Full body" : "Face view"}</button><button disabled={!model} onClick={() => setRevision((value) => value + 1)}>Reset camera</button></>;
   return <div className="avatar-workspace">
     <header className="workspace-header">
       <div className="brand"><Image className="brand-mark" src="/logo-mark.png" alt="" width={40} height={40} unoptimized priority /><div><h1>Avatar Studio</h1><p className="muted">{studio ? "Pose, express and preview your rigged avatar" : "Live conversation with your avatar"}</p></div></div>
@@ -113,9 +114,7 @@ export default function AvatarScene({ variant = "studio", onModelReady, sidebar,
     </header>
     <div className={`workspace-grid ${studio && !debug ? "panel-hidden" : ""}`}>
       <section className="viewer-section" aria-label="Interactive avatar viewer">
-        {studio && <>
-        <div className="viewer-toolbar"><span className="asset-label"><span className={`status-dot ${model ? "ready" : ""}`} />{model ? `${modelProfile.url.slice(1)} · Ready` : `${modelProfile.url.slice(1)} · Loading`}</span><div><button className="demo-button" disabled={!model} aria-pressed={demo} onClick={() => demoRef.current?.toggleDemo()}>{demo ? "Stop blend demo" : "Run blend demo"}</button><button className="save-button" disabled={!model} onClick={save} title="Save pose, face, behavior, lighting and camera so /avtaar-connected shows the same look"><SaveIcon />Save look</button><button onClick={() => setCloseUp((value) => !value)}>{closeUp ? "Full body" : "Face view"}</button><button onClick={() => setRevision((value) => value + 1)}>Reset camera</button><button aria-expanded={debug} onClick={() => setDebug((value) => !value)}>{debug ? "Hide panel" : "Show panel"}</button></div></div>
-        </>}
+        <div className="viewer-toolbar"><span className="asset-label"><span className={`status-dot ${model ? "ready" : ""}`} />{model ? `${modelProfile.url.slice(1)} · Ready` : `${modelProfile.url.slice(1)} · Loading`}</span><div>{studio && <><button className="demo-button" disabled={!model} aria-pressed={demo} onClick={() => demoRef.current?.toggleDemo()}>{demo ? "Stop blend demo" : "Run blend demo"}</button><button className="save-button" disabled={!model} onClick={save} title="Save pose, face, behavior, lighting and camera so /avtaar-connected shows the same look"><SaveIcon />Save look</button></>}{cameraControls}{studio && <button aria-expanded={debug} onClick={() => setDebug((value) => !value)}>{debug ? "Hide panel" : "Show panel"}</button>}</div></div>
         <div className="canvas-shell" style={{ background: theme.horizon }}>{studio && <ThemePicker themeId={custom ? customThemeId : themeId} label={theme.label} onChange={chooseTheme} />}<DebugMetricsOverlay model={model} playback={playback} /><ViewerBoundary>
           <Canvas shadows dpr={[1, 1.5]} camera={{ position: [0, 1.65, 5], fov: 38, near: 0.01, far: 100 }} gl={{ antialias: true }} fallback={<div className="viewer-error" role="alert">WebGL is unavailable. Enable hardware acceleration or use a supported browser.</div>}>
             <color attach="background" args={[theme.horizon]} /><fog attach="fog" args={[theme.horizon, 12, 28]} />
